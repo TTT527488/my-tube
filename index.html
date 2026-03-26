@@ -8,13 +8,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="YouTube">
+<link rel="manifest" href="/manifest.json">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:#0f0f0f;color:#fff;font-family:-apple-system,sans-serif;overflow-x:hidden}
 header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:200;border-bottom:1px solid #272727}
 .logo{font-size:20px;font-weight:800;letter-spacing:-0.5px}.logo span{color:#ff0000}
-.header-icons{display:flex;gap:20px}
+.header-icons{display:flex;gap:20px;align-items:center}
 .header-icons button{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px}
+.avatar{width:28px;height:28px;border-radius:50%;background:#333;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:14px}
+.avatar img{width:100%;height:100%;object-fit:cover}
 .tab-bar{position:fixed;bottom:0;left:0;right:0;background:#0f0f0f;display:flex;border-top:1px solid #272727;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
 .tab-btn{flex:1;padding:10px 4px 8px;background:none;border:none;color:#aaa;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:color .2s}
 .tab-btn.active{color:#fff}
@@ -31,41 +34,52 @@ header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;
 .video-meta{flex:1}
 .video-meta h3{font-size:14px;line-height:1.4;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .video-meta p{font-size:12px;color:#aaa;margin-top:3px}
-.section-title{font-size:16px;font-weight:700;padding:16px 12px 8px}
-.player-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:300;flex-direction:column}
+.player-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:300;flex-direction:column;touch-action:none}
 .player-overlay.active{display:flex}
 .player-header{display:flex;align-items:center;padding:12px 16px;gap:12px;background:#0f0f0f}
-.back-btn{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.back-btn{background:none;border:none;color:#fff;font-size:28px;cursor:pointer;line-height:1}
 .player-title{font-size:14px;font-weight:500;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.player-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000}
-.player-wrap iframe{width:100%;height:100%;border:none}
+.player-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;flex-shrink:0}
+.player-wrap iframe{width:100%;height:100%;border:none;pointer-events:auto}
+.tap-zone{position:absolute;top:0;bottom:0;width:35%;z-index:10;display:flex;align-items:center;justify-content:center}
+.tap-zone-left{left:0}
+.tap-zone-right{right:0}
+.seek-anim{position:absolute;background:rgba(255,255,255,.2);border-radius:50%;width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none}
+.seek-anim.show{opacity:1}
 .player-info{padding:12px 16px;overflow-y:auto;flex:1}
 .player-info h2{font-size:16px;font-weight:600;line-height:1.4}
 .player-info .ch-name{font-size:14px;color:#aaa;margin-top:6px}
-.mini-player{display:none;position:fixed;bottom:70px;right:12px;width:200px;background:#1a1a1a;border-radius:10px;overflow:hidden;z-index:250;box-shadow:0 4px 20px rgba(0,0,0,.6)}
+.player-actions{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid #272727}
+.action-btn{background:none;border:none;color:#fff;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 12px;border-radius:8px;background:#1a1a1a}
+.mini-player{position:fixed;bottom:70px;right:12px;width:210px;background:#1a1a1a;border-radius:12px;overflow:hidden;z-index:250;box-shadow:0 4px 24px rgba(0,0,0,.7);display:none;touch-action:none}
 .mini-player.active{display:block}
 .mini-thumb{width:100%;aspect-ratio:16/9;background:#000}
 .mini-thumb iframe{width:100%;height:100%;border:none}
 .mini-info{padding:6px 8px;display:flex;align-items:center;justify-content:space-between}
 .mini-title{font-size:11px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.mini-close{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:2px 4px}
+.mini-close{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:2px 6px}
 .my-page{padding:16px}
 .profile-section{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid #272727;margin-bottom:8px}
-.profile-icon{width:56px;height:56px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:28px}
+.profile-icon{width:56px;height:56px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
+.profile-icon img{width:100%;height:100%;object-fit:cover}
 .profile-info h2{font-size:18px;font-weight:600}
 .profile-info p{font-size:13px;color:#aaa;margin-top:2px}
 .menu-item{display:flex;align-items:center;gap:16px;padding:14px 4px;border-bottom:1px solid #1a1a1a;cursor:pointer}
-.menu-item:active{background:#1a1a1a}
 .menu-icon{font-size:22px;width:32px;text-align:center}
 .menu-label{font-size:15px}
 .menu-arrow{margin-left:auto;color:#aaa;font-size:18px}
-.loading{text-align:center;padding:60px 0;color:#aaa}
+.login-banner{background:#272727;border-radius:12px;padding:20px;text-align:center;margin-bottom:16px}
+.login-banner p{color:#aaa;font-size:14px;margin-bottom:12px}
+.login-btn{background:#ff0000;color:#fff;border:none;padding:12px 28px;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;width:100%}
 .search-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#0f0f0f;z-index:300;flex-direction:column}
 .search-overlay.active{display:flex}
 .search-header{display:flex;align-items:center;padding:12px 16px;gap:12px;border-bottom:1px solid #272727}
 .search-input{flex:1;background:#272727;border:none;color:#fff;padding:10px 14px;border-radius:20px;font-size:15px;outline:none}
 .search-cancel{background:none;border:none;color:#fff;font-size:15px;cursor:pointer;white-space:nowrap}
 .search-results{overflow-y:auto;flex:1}
+.loading{text-align:center;padding:60px 0;color:#aaa}
+.section-title{font-size:15px;font-weight:700;padding:12px 12px 4px;color:#aaa}
+.pip-hint{font-size:11px;color:#555;text-align:center;padding:4px 0}
 </style>
 </head>
 <body>
@@ -74,11 +88,12 @@ header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;
   <div class="logo"><span>You</span>Tube</div>
   <div class="header-icons">
     <button onclick="openSearch()">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="22" height="22"><circle cx="11" cy="11" r="6"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     </button>
     <button>
       <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
     </button>
+    <div class="avatar" id="header-avatar" onclick="switchTab('my')">👤</div>
   </div>
 </header>
 
@@ -90,28 +105,19 @@ header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;
     <div class="loading">読み込み中...</div>
   </div>
   <div class="page" id="page-my">
-    <div class="my-page">
-      <div class="profile-section">
-        <div class="profile-icon">👤</div>
-        <div class="profile-info">
-          <h2>マイチャンネル</h2>
-          <p>@TTT527488</p>
-        </div>
+    <div class="my-page" id="my-page-content">
+      <div class="login-banner">
+        <p>ログインすると登録チャンネルや履歴が同期されます</p>
+        <button class="login-btn" onclick="startLogin()">Googleでログイン</button>
       </div>
       <div class="menu-item" onclick="showSection('history')">
-        <div class="menu-icon">🕐</div>
-        <div class="menu-label">履歴</div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-icon">🕐</div><div class="menu-label">履歴</div><div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="showSection('watchlater')">
-        <div class="menu-icon">🕒</div>
-        <div class="menu-label">後で見る</div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-icon">🕒</div><div class="menu-label">後で見る</div><div class="menu-arrow">›</div>
       </div>
       <div class="menu-item" onclick="showSection('liked')">
-        <div class="menu-icon">👍</div>
-        <div class="menu-label">高く評価した動画</div>
-        <div class="menu-arrow">›</div>
+        <div class="menu-icon">👍</div><div class="menu-label">高く評価した動画</div><div class="menu-arrow">›</div>
       </div>
     </div>
   </div>
@@ -119,31 +125,40 @@ header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;
 
 <nav class="tab-bar">
   <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">
-    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    ホーム
+    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>ホーム
   </button>
   <button class="tab-btn" id="tab-subs" onclick="switchTab('subs')">
-    <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zm-7-8v2h18v-2H3zm3-6v2h12V4H6z"/></svg>
-    登録チャンネル
+    <svg viewBox="0 0 24 24"><path d="M10 18h4v-2h-4v2zm-7-8v2h18v-2H3zm3-6v2h12V4H6z"/></svg>登録チャンネル
   </button>
   <button class="tab-btn" id="tab-my" onclick="switchTab('my')">
-    <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-    マイページ
+    <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>マイページ
   </button>
 </nav>
 
 <!-- 動画プレーヤー -->
 <div class="player-overlay" id="player">
   <div class="player-header">
-    <button class="back-btn" onclick="closePlayer()">‹</button>
+    <button class="back-btn" id="player-back">‹</button>
     <div class="player-title" id="player-title">動画</div>
   </div>
-  <div class="player-wrap">
-    <iframe id="player-iframe" allowfullscreen allow="autoplay; picture-in-picture" src=""></iframe>
+  <div class="player-wrap" id="player-wrap">
+    <iframe id="player-iframe" allowfullscreen allow="autoplay; picture-in-picture; web-share" src=""></iframe>
+    <div class="tap-zone tap-zone-left" id="tap-left">
+      <div class="seek-anim" id="anim-left">⏪ 10秒</div>
+    </div>
+    <div class="tap-zone tap-zone-right" id="tap-right">
+      <div class="seek-anim" id="anim-right">10秒 ⏩</div>
+    </div>
   </div>
   <div class="player-info">
     <h2 id="player-full-title"></h2>
     <p class="ch-name" id="player-ch-name"></p>
+    <div class="player-actions">
+      <button class="action-btn" onclick="addWatchLater()">🕒<span>後で見る</span></button>
+      <button class="action-btn" onclick="addLiked()">👍<span>高評価</span></button>
+      <button class="action-btn" onclick="shareVideo()">↗<span>共有</span></button>
+    </div>
+    <p class="pip-hint">アプリを閉じると自動でPiPになります</p>
   </div>
 </div>
 
@@ -158,7 +173,7 @@ header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;
   </div>
 </div>
 
-<!-- 検索オーバーレイ -->
+<!-- 検索 -->
 <div class="search-overlay" id="search-overlay">
   <div class="search-header">
     <input class="search-input" id="search-input" type="text" placeholder="検索" onkeydown="if(event.key==='Enter')doSearch()">
@@ -172,13 +187,90 @@ header{position:fixed;top:0;left:0;right:0;background:#0f0f0f;padding:12px 16px;
 <script>
 const API_KEY = 'AIzaSyB_1uDGl_cX0qapDvLOvRSx7fNUUwQRhFM';
 const BASE = 'https://www.googleapis.com/youtube/v3';
+const CLIENT_ID = 'YOUR_CLIENT_ID';
 
 let currentVideoId = '';
-let history = JSON.parse(localStorage.getItem('yt_history')||'[]');
-let watchLater = JSON.parse(localStorage.getItem('yt_watchlater')||'[]');
-let liked = JSON.parse(localStorage.getItem('yt_liked')||'[]');
+let currentTitle = '';
+let currentCh = '';
+let historyList = JSON.parse(localStorage.getItem('yt_history')||'[]');
+let watchLaterList = JSON.parse(localStorage.getItem('yt_watchlater')||'[]');
+let likedList = JSON.parse(localStorage.getItem('yt_liked')||'[]');
+let accessToken = localStorage.getItem('yt_token')||'';
+let userInfo = JSON.parse(localStorage.getItem('yt_user')||'null');
 
-async function fetchVideos(query, pageId) {
+// ログイン
+function startLogin() {
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: location.origin,
+    response_type: 'token',
+    scope: 'https://www.googleapis.com/auth/youtube.readonly profile email',
+    prompt: 'select_account'
+  });
+  location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
+
+function checkToken() {
+  const hash = new URLSearchParams(location.hash.replace('#',''));
+  const token = hash.get('access_token');
+  if(token) {
+    accessToken = token;
+    localStorage.setItem('yt_token', token);
+    history.replaceState(null,'',location.pathname);
+    fetchUserInfo();
+  } else if(accessToken) {
+    fetchUserInfo();
+  }
+}
+
+async function fetchUserInfo() {
+  try {
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers:{Authorization:'Bearer '+accessToken}
+    });
+    if(!res.ok) throw new Error();
+    userInfo = await res.json();
+    localStorage.setItem('yt_user', JSON.stringify(userInfo));
+    updateProfileUI();
+  } catch(e) {
+    accessToken = '';
+    localStorage.removeItem('yt_token');
+  }
+}
+
+function updateProfileUI() {
+  if(!userInfo) return;
+  const avatar = document.getElementById('header-avatar');
+  avatar.innerHTML = userInfo.picture ? `<img src="${userInfo.picture}">` : userInfo.name[0];
+  document.getElementById('my-page-content').innerHTML = `
+    <div class="profile-section">
+      <div class="profile-icon">${userInfo.picture?`<img src="${userInfo.picture}">`:'👤'}</div>
+      <div class="profile-info"><h2>${userInfo.name}</h2><p>${userInfo.email}</p></div>
+    </div>
+    <div class="menu-item" onclick="showSection('history')">
+      <div class="menu-icon">🕐</div><div class="menu-label">履歴</div><div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="showSection('watchlater')">
+      <div class="menu-icon">🕒</div><div class="menu-label">後で見る</div><div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="showSection('liked')">
+      <div class="menu-icon">👍</div><div class="menu-label">高く評価した動画</div><div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="logout()" style="margin-top:16px">
+      <div class="menu-icon">🚪</div><div class="menu-label" style="color:#ff4444">ログアウト</div>
+    </div>`;
+}
+
+function logout() {
+  localStorage.removeItem('yt_token');
+  localStorage.removeItem('yt_user');
+  accessToken = '';
+  userInfo = null;
+  location.reload();
+}
+
+// API
+async function fetchVideos(query) {
   const url = `${BASE}/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=20&videoDuration=medium&key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
@@ -192,40 +284,43 @@ async function fetchVideoDetails(ids) {
   return data.items||[];
 }
 
+async function fetchSubscriptions() {
+  if(!accessToken) return null;
+  const res = await fetch(`${BASE}/subscriptions?part=snippet&mine=true&maxResults=20&key=${API_KEY}`, {
+    headers:{Authorization:'Bearer '+accessToken}
+  });
+  const data = await res.json();
+  return data.items||[];
+}
+
 function parseDuration(d) {
   const m = d.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  const h = parseInt(m[1]||0), min = parseInt(m[2]||0), sec = parseInt(m[3]||0);
+  const h=parseInt(m[1]||0),min=parseInt(m[2]||0),sec=parseInt(m[3]||0);
   if(h>0) return `${h}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   return `${min}:${String(sec).padStart(2,'0')}`;
 }
 
 function fmtCount(n) {
-  n = parseInt(n||0);
+  n=parseInt(n||0);
   if(n>=1000000) return (n/1000000).toFixed(1)+'M回視聴';
-  if(n>=1000) return (n/1000).toFixed(0)+'K回視聴';
+  if(n>=1000) return Math.round(n/1000)+'K回視聴';
   return n+'回視聴';
 }
 
 function videoCard(v, detail) {
-  const id = v.id.videoId || v.id;
-  const title = v.snippet.title;
-  const ch = v.snippet.channelTitle;
-  const thumb = v.snippet.thumbnails?.high?.url || v.snippet.thumbnails?.medium?.url || '';
+  const id = v.id.videoId||v.id;
+  const title = (v.snippet.title||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  const ch = (v.snippet.channelTitle||'').replace(/'/g,"\\'");
+  const thumb = v.snippet.thumbnails?.high?.url||v.snippet.thumbnails?.medium?.url||'';
   const dur = detail ? parseDuration(detail.contentDetails.duration) : '';
   const views = detail ? fmtCount(detail.statistics.viewCount) : '';
-  return `<div class="video-card" onclick="playVideo('${id}','${title.replace(/'/g,"\\'")}','${ch.replace(/'/g,"\\'")}')">
-    <div class="thumb-wrap">
-      <img src="${thumb}" loading="lazy" alt="">
-      ${dur?`<div class="duration">${dur}</div>`:''}
-    </div>
+  return `<div class="video-card" onclick="playVideo('${id}','${title}','${ch}')">
+    <div class="thumb-wrap"><img src="${thumb}" loading="lazy" alt="">
+    ${dur?`<div class="duration">${dur}</div>`:''}</div>
     <div class="video-info">
       <div class="ch-icon"></div>
-      <div class="video-meta">
-        <h3>${title}</h3>
-        <p>${ch}${views?' · '+views:''}</p>
-      </div>
-    </div>
-  </div>`;
+      <div class="video-meta"><h3>${v.snippet.title}</h3><p>${v.snippet.channelTitle}${views?' · '+views:''}</p></div>
+    </div></div>`;
 }
 
 async function loadPage(pageId, query) {
@@ -233,14 +328,43 @@ async function loadPage(pageId, query) {
   el.innerHTML = '<div class="loading">読み込み中...</div>';
   try {
     const items = await fetchVideos(query);
-    if(!items.length){el.innerHTML='<div class="loading">動画が見つかりませんでした</div>';return;}
+    if(!items.length){el.innerHTML='<div class="loading">動画が見つかりません</div>';return;}
     const ids = items.map(v=>v.id.videoId);
     const details = await fetchVideoDetails(ids);
-    const detailMap = {};
-    details.forEach(d=>detailMap[d.id]=d);
-    el.innerHTML = items.map(v=>videoCard(v, detailMap[v.id.videoId])).join('');
+    const dm = {};details.forEach(d=>dm[d.id]=d);
+    el.innerHTML = items.map(v=>videoCard(v,dm[v.id.videoId])).join('');
   } catch(e) {
-    el.innerHTML = '<div class="loading">読み込みエラー。しばらくしてから再試行してください。</div>';
+    el.innerHTML='<div class="loading">エラーが発生しました</div>';
+  }
+}
+
+async function loadSubs() {
+  const el = document.getElementById('page-subs');
+  if(!accessToken) {
+    el.innerHTML = `<div style="padding:32px 16px;text-align:center">
+      <p style="color:#aaa;margin-bottom:16px">ログインすると登録チャンネルの新着動画が表示されます</p>
+      <button onclick="startLogin()" style="background:#ff0000;color:#fff;border:none;padding:12px 28px;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer">Googleでログイン</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = '<div class="loading">読み込み中...</div>';
+  try {
+    const subs = await fetchSubscriptions();
+    if(!subs||!subs.length){el.innerHTML='<div class="loading">登録チャンネルがありません</div>';return;}
+    const chIds = subs.map(s=>s.snippet.resourceId.channelId).slice(0,5);
+    let allVideos = [];
+    for(const chId of chIds) {
+      const res = await fetch(`${BASE}/search?part=snippet&channelId=${chId}&type=video&order=date&maxResults=4&key=${API_KEY}`);
+      const data = await res.json();
+      allVideos = allVideos.concat((data.items||[]).filter(v=>!v.snippet.title.toLowerCase().includes('#shorts')));
+    }
+    if(!allVideos.length){el.innerHTML='<div class="loading">新着動画がありません</div>';return;}
+    const ids = allVideos.map(v=>v.id.videoId);
+    const details = await fetchVideoDetails(ids);
+    const dm={};details.forEach(d=>dm[d.id]=d);
+    el.innerHTML = allVideos.map(v=>videoCard(v,dm[v.id.videoId])).join('');
+  } catch(e) {
+    el.innerHTML='<div class="loading">エラーが発生しました</div>';
   }
 }
 
@@ -249,95 +373,176 @@ function switchTab(tab) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('page-'+tab).classList.add('active');
-  if(tab==='home' && document.getElementById('page-home').querySelector('.video-card')===null)
+  if(tab==='home'&&!document.getElementById('page-home').querySelector('.video-card'))
     loadPage('home','おすすめ 人気動画');
-  if(tab==='subs' && document.getElementById('page-subs').querySelector('.video-card')===null)
-    loadPage('subs','登録チャンネル 新着動画');
+  if(tab==='subs'&&!document.getElementById('page-subs').querySelector('.video-card'))
+    loadSubs();
 }
 
+// プレーヤー
 function playVideo(id, title, ch) {
-  currentVideoId = id;
-  document.getElementById('player-iframe').src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
-  document.getElementById('player-title').textContent = title;
-  document.getElementById('player-full-title').textContent = title;
-  document.getElementById('player-ch-name').textContent = ch;
+  currentVideoId=id; currentTitle=title; currentCh=ch;
+  document.getElementById('player-iframe').src=`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
+  document.getElementById('player-title').textContent=title;
+  document.getElementById('player-full-title').textContent=title;
+  document.getElementById('player-ch-name').textContent=ch;
   document.getElementById('player').classList.add('active');
   if(navigator.vibrate) navigator.vibrate(10);
-  // 履歴に追加
-  history = history.filter(h=>h.id!==id);
-  history.unshift({id,title,ch});
-  if(history.length>50) history.pop();
-  localStorage.setItem('yt_history', JSON.stringify(history));
+  historyList=historyList.filter(h=>h.id!==id);
+  historyList.unshift({id,title,ch});
+  if(historyList.length>50) historyList.pop();
+  localStorage.setItem('yt_history',JSON.stringify(historyList));
+  setupMediaSession(title, ch);
 }
 
-function closePlayer() {
-  const iframe = document.getElementById('player-iframe');
-  const src = iframe.src;
-  document.getElementById('player').classList.remove('active');
-  // ミニプレーヤーへ
-  document.getElementById('mini-iframe').src = src;
-  document.getElementById('mini-title').textContent = document.getElementById('player-title').textContent;
-  document.getElementById('mini-player').classList.add('active');
+// スワイプでミニプレーヤー
+let startY=0, isDragging=false;
+const playerEl = document.getElementById('player');
+playerEl.addEventListener('touchstart',e=>{
+  if(e.target.closest('iframe')||e.target.closest('.tap-zone')) return;
+  startY=e.touches[0].clientY; isDragging=true;
+},{passive:true});
+playerEl.addEventListener('touchmove',e=>{
+  if(!isDragging) return;
+  const dy=e.touches[0].clientY-startY;
+  if(dy>0) playerEl.style.transform=`translateY(${dy}px)`;
+},{passive:true});
+playerEl.addEventListener('touchend',e=>{
+  if(!isDragging) return;
+  isDragging=false;
+  const dy=e.changedTouches[0].clientY-startY;
+  playerEl.style.transform='';
+  if(dy>120) toMini();
+},{passive:true});
+
+// ミニプレーヤースワイプで閉じる
+let miniStartX=0;
+const miniEl=document.getElementById('mini-player');
+miniEl.addEventListener('touchstart',e=>{miniStartX=e.touches[0].clientX;},{passive:true});
+miniEl.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-miniStartX;
+  if(Math.abs(dx)>80){
+    miniEl.style.transition='transform .3s';
+    miniEl.style.transform=`translateX(${dx>0?300:-300}px)`;
+    if(navigator.vibrate) navigator.vibrate(15);
+    setTimeout(()=>{closeMini();miniEl.style.transition='';miniEl.style.transform='';},300);
+  }
+},{passive:true});
+
+function toMini() {
+  const src=document.getElementById('player-iframe').src;
+  playerEl.classList.remove('active');
+  document.getElementById('mini-iframe').src=src;
+  document.getElementById('mini-title').textContent=currentTitle;
+  miniEl.classList.add('active');
   if(navigator.vibrate) navigator.vibrate(10);
 }
 
+function closePlayer() { toMini(); }
 function closeMini() {
-  document.getElementById('mini-player').classList.remove('active');
-  document.getElementById('mini-iframe').src = '';
+  miniEl.classList.remove('active');
+  document.getElementById('mini-iframe').src='';
 }
 
+// ダブルタップ10秒シーク（アニメーション付き）
+let tapTimerL=null, tapTimerR=null;
+document.getElementById('tap-left').addEventListener('click',()=>{
+  if(tapTimerL){clearTimeout(tapTimerL);tapTimerL=null;showSeekAnim('left');}
+  else tapTimerL=setTimeout(()=>{tapTimerL=null;},300);
+});
+document.getElementById('tap-right').addEventListener('click',()=>{
+  if(tapTimerR){clearTimeout(tapTimerR);tapTimerR=null;showSeekAnim('right');}
+  else tapTimerR=setTimeout(()=>{tapTimerR=null;},300);
+});
+
+function showSeekAnim(side) {
+  const el=document.getElementById('anim-'+side);
+  el.classList.add('show');
+  if(navigator.vibrate) navigator.vibrate(8);
+  setTimeout(()=>el.classList.remove('show'),700);
+}
+
+// Media Session API（ロック画面操作）
+function setupMediaSession(title, ch) {
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: title, artist: ch, album: 'YouTube',
+    artwork:[{src:'https://www.youtube.com/favicon.ico',sizes:'32x32',type:'image/x-icon'}]
+  });
+  navigator.mediaSession.setActionHandler('previoustrack', ()=>showSeekAnim('left'));
+  navigator.mediaSession.setActionHandler('nexttrack', ()=>showSeekAnim('right'));
+}
+
+// アクション
+function addWatchLater() {
+  if(!currentVideoId) return;
+  watchLaterList=watchLaterList.filter(v=>v.id!==currentVideoId);
+  watchLaterList.unshift({id:currentVideoId,title:currentTitle,ch:currentCh});
+  localStorage.setItem('yt_watchlater',JSON.stringify(watchLaterList));
+  if(navigator.vibrate) navigator.vibrate(10);
+  alert('「後で見る」に追加しました');
+}
+
+function addLiked() {
+  if(!currentVideoId) return;
+  likedList=likedList.filter(v=>v.id!==currentVideoId);
+  likedList.unshift({id:currentVideoId,title:currentTitle,ch:currentCh});
+  localStorage.setItem('yt_liked',JSON.stringify(likedList));
+  if(navigator.vibrate) navigator.vibrate(10);
+  alert('高評価しました');
+}
+
+function shareVideo() {
+  const url=`https://youtu.be/${currentVideoId}`;
+  if(navigator.share) navigator.share({title:currentTitle,url});
+  else { navigator.clipboard?.writeText(url); alert('URLをコピーしました'); }
+}
+
+// 検索
 function openSearch() {
   document.getElementById('search-overlay').classList.add('active');
-  setTimeout(()=>document.getElementById('search-input').focus(), 100);
+  setTimeout(()=>document.getElementById('search-input').focus(),100);
 }
-
 function closeSearch() {
   document.getElementById('search-overlay').classList.remove('active');
-  document.getElementById('search-input').value = '';
-  document.getElementById('search-results').innerHTML = '<div class="loading">キーワードを入力してください</div>';
+  document.getElementById('search-input').value='';
+  document.getElementById('search-results').innerHTML='<div class="loading">キーワードを入力してください</div>';
 }
-
 async function doSearch() {
-  const q = document.getElementById('search-input').value.trim();
+  const q=document.getElementById('search-input').value.trim();
   if(!q) return;
-  const el = document.getElementById('search-results');
-  el.innerHTML = '<div class="loading">検索中...</div>';
+  const el=document.getElementById('search-results');
+  el.innerHTML='<div class="loading">検索中...</div>';
   try {
-    const items = await fetchVideos(q);
-    if(!items.length){el.innerHTML='<div class="loading">結果が見つかりませんでした</div>';return;}
-    const ids = items.map(v=>v.id.videoId);
-    const details = await fetchVideoDetails(ids);
-    const detailMap = {};
-    details.forEach(d=>detailMap[d.id]=d);
-    el.innerHTML = items.map(v=>videoCard(v, detailMap[v.id.videoId])).join('');
-  } catch(e) {
-    el.innerHTML = '<div class="loading">エラーが発生しました</div>';
-  }
+    const items=await fetchVideos(q);
+    if(!items.length){el.innerHTML='<div class="loading">結果が見つかりません</div>';return;}
+    const ids=items.map(v=>v.id.videoId);
+    const details=await fetchVideoDetails(ids);
+    const dm={};details.forEach(d=>dm[d.id]=d);
+    el.innerHTML=items.map(v=>videoCard(v,dm[v.id.videoId])).join('');
+  } catch(e){el.innerHTML='<div class="loading">エラーが発生しました</div>';}
 }
 
 function showSection(type) {
-  const titles = {history:'履歴', watchlater:'後で見る', liked:'高く評価した動画'};
-  const data = {history, watchlater: watchLater, liked}[type];
-  const el = document.getElementById('page-my');
-  if(!data.length) {
-    alert(titles[type]+'はまだありません');
-    return;
-  }
-  // 簡易表示
-  el.innerHTML = `<div style="padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #272727">
-    <button onclick="switchTab('my')" style="background:none;border:none;color:#fff;font-size:24px">‹</button>
-    <span style="font-size:16px;font-weight:700">${titles[type]}</span>
-  </div>` + data.map(v=>
-    `<div class="video-card" onclick="playVideo('${v.id}','${(v.title||'').replace(/'/g,"\\'")}','${(v.ch||'').replace(/'/g,"\\'")}')">
-      <div class="video-info" style="padding:12px">
-        <div class="ch-icon" style="width:80px;height:45px;border-radius:4px;background:#333;flex-shrink:0"></div>
-        <div class="video-meta"><h3>${v.title||'動画'}</h3><p>${v.ch||''}</p></div>
-      </div>
-    </div>`
-  ).join('');
+  const titles={history:'履歴',watchlater:'後で見る',liked:'高く評価した動画'};
+  const data={history:historyList,watchlater:watchLaterList,liked:likedList}[type];
+  const el=document.getElementById('page-my');
+  if(!data.length){alert(titles[type]+'はまだありません');return;}
+  el.innerHTML=`<div style="padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #272727">
+    <button onclick="switchTab('my')" style="background:none;border:none;color:#fff;font-size:28px">‹</button>
+    <span style="font-size:16px;font-weight:700">${titles[type]}</span></div>`+
+  data.map(v=>`<div class="video-card" onclick="playVideo('${v.id}','${(v.title||'').replace(/'/g,"\\'")}','${(v.ch||'').replace(/'/g,"\\'")}')">
+    <div class="video-info" style="padding:12px">
+      <div class="ch-icon" style="width:80px;height:45px;border-radius:4px;background:#333;flex-shrink:0"></div>
+      <div class="video-meta"><h3>${v.title||'動画'}</h3><p>${v.ch||''}</p></div>
+    </div></div>`).join('');
 }
 
-// 初期ロード
+// 戻るボタン
+document.getElementById('player-back').addEventListener('click', closePlayer);
+
+// 初期化
+checkToken();
 loadPage('home','おすすめ 人気動画');
 </script>
 </body>
